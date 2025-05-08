@@ -1,8 +1,20 @@
 """
 Funções utilizadas no sistema de concessionária de carros
 """
-from pathlib import Path
+from front_end import show_conservation_subheader
+from front_end import show_success_on_file_write
+from front_end import show_cancel_new_car_entry
+from front_end import show_high_price_subheader
+from front_end import show_list_all_cars_header
+from front_end import show_car_search_header
+from front_end import show_new_car_summary
+from front_end import show_new_car_header
+from front_end import show_search_result
+from front_end import show_menu_header
+from front_end import show_error
 from datetime import datetime
+from pathlib import Path
+
 
 #DEFINE O ARQUIVO DE BANCO DE DADOS
 arquivo = Path('estoque_carros.txt')
@@ -18,39 +30,6 @@ mes = int(str(mes)[5:7])        #Separa apenas o mês atual e converte para inte
 if mes >= 6:
     anoMax += 1
 
-
-##FUNÇÃO SEM RETORNO - Limpa a tela
-def limpaTela(linhas):
-    print('\n' * linhas)
-
-
-##FUNÇÃO SEM RETORNO - Cabeçalho
-def cabecalho(titulo):
-    tamTitulo = len(titulo)
-    print('=' * tamTitulo)
-    print(titulo)
-    print('=' * tamTitulo)
-    print()
-
-
-##FUNÇÃO COM RETORNO INTEIRO
-#Mostra o Menu Principal e aguarda a opção do usuário
-def mostraMenu(listaMenu):
-    print('MENU PRINCIPAL')
-    print('--------------')
-    for item in listaMenu:      #Varre a lista de itens do Menu Principal
-        print(f'{listaMenu.index(item) + 1} --> {item}')    #Mostra o índice e o item
-
-    print()
-    opMenu = input('Escolha uma opção: ')   #Aguarda a opção do usuário
-    try:                        #Tenta...
-        opMenu = int(opMenu)    #Converter para inteiro
-    except ValueError:          #Se não conseguiu
-        return -1               #Retorna -1
-    else:                       #Se conseguiu converter
-        return opMenu           #Retorna a opção do usuário
-
-
 ##FUNÇÃO COM RETORNO ADAPTÁVEL
 #Realiza a checagem da informação inserida pelo usuário
 def checaDados(tipo, informacao):
@@ -58,31 +37,31 @@ def checaDados(tipo, informacao):
         if informacao != '':    #Verifica se foi digitado algo
             return informacao   #Retorna a informação digitada
         else:                   #Se não foi digitado algo mostra mensagem
-            print('Esse campo não pode ficar em branco! Por favor, informe novamente.')
+            show_error(1)
             return ''           #Retorna vazio
     elif tipo == int:   #Se o tipo for inteiro
         if informacao != '':    #Verifica se foi digitado algo
             try:                #Tenta...
                 informacao = int(informacao)    #Converter para inteiro
             except ValueError:  #Se não conseguiu converter mostra mensagem
-                print('Esse campo só aceita número inteiro! Por favor, informe novamente.')
+                show_error(2)
                 return ''       #Retorna vazio
             else:               #Se conseguiu converter
                 return informacao   #Retorna o número inteiro
         else:           #Se não foi digitado algo mostra mensagem
-            print('Esse campo não pode ficar em branco! Por favor, informe novamente.')
+            show_error(1)
             return ''   #Retorna vazio
     elif tipo == float:     #Se o tipo for inteiro
         if informacao != '':    #Verifica se foi digitado algo
             try:                #Tenta...
                 informacao = float(informacao)    #Converter para float
             except ValueError:  #Se não conseguiu converter mostra mensagem
-                print('Esse campo só aceita número real! Por favor, informe novamente.')
+                show_error(3)
                 return ''       #Retorna vazio
             else:               #Se conseguiu converter
                 return informacao   #Retorna o número real
         else:           #Se não foi digitado algo mostra mensagem
-            print('Esse campo não pode ficar em branco! Por favor, informe novamente.')
+            show_error(1)
             return ''           #Retorna vazio
 
 
@@ -97,9 +76,7 @@ def gravaArquivo(dicCarro):
                 linha = linha + '\n'            #Adiciona uma quebra de linha
         conteudoArquivo = conteudoArquivo + linha   #Adiciona a nova linha ao conteúdo já existente
         arquivo.write_text(conteudoArquivo)     #Grava no arquivo o conteúdo atualizado
-        print()
-        print('Arquivo gravado com sucesso!')
-        input('Pressione ENTER para voltar ao Menu Principal...')
+        show_success_on_file_write()
     else:                       #Se o arquivo não existe
         linha = ''              #Cria a variável para receber as informações do novo carro
         for chave, valor in dicCarro.items():   #Varre o dicionário do novo carro
@@ -107,9 +84,7 @@ def gravaArquivo(dicCarro):
             if chave == 'estado':               #Se a chave for a última
                 linha = linha + '\n'            #Adiciona uma quebra de linha
         arquivo.write_text(linha)               #Grava no arquivo o conteúdo da linha
-        print()
-        print('O arquivo de BD não existia e foi criado com sucesso!')
-        input('Pressione ENTER para voltar ao Menu Principal...')
+        show_error(4)
 
 
 ##FUNÇÃO SEM RETORNO
@@ -121,11 +96,7 @@ def cadastrar_carro():
                  'ano': int,
                  'estado': str}
 
-    print('Cadastrar novo carro')
-    print('--------------------')
-    print()
-    print('Por favor, insira todas as informações:')
-    print()
+    show_new_car_header()
     #Solicita as informações ao usuário e chama a função de checagem do tipo de dados.
     #Essa função verificará também se o campo ficou vazio. Se ficou vazio, a informação
     #será solicitada novamente até que o usuário insira a informação correta
@@ -147,9 +118,9 @@ def cadastrar_carro():
         if dadoInserido == '':  #Se o campo ficou vazio, não faz nada, pois já exibiu msg de erro
             pass
         elif dadoInserido < anoMin:   #Se o ano é inferior ao ano mínimo
-            print('O ano informado é anterior à existência de carros! Tente novamente.')
+            show_error(5)
         elif dadoInserido > anoMax:   #Se o ano é superior ao ano máximo
-            print('O ano informado é superior ao ano atual. Tente novamente.')
+            show_error(6)
         dadoInserido = checaDados(int, input('Ano do carro: '))
 
     novoCarro['ano'] = dadoInserido
@@ -160,35 +131,23 @@ def cadastrar_carro():
 
     novoCarro['estado'] = dadoInserido
 
-    print()
-    print('As informações inseridas para o novo carro foram:')
-    #Mostra o resumo das informações inseridas
-    for chave, valor in novoCarro.items():
-        print(f'{chave.capitalize()} - {str(valor).upper()}')
-    print()
+    show_new_car_summary(novoCarro)
     #Solicita confirmação para gravar no arquivo
     if input('Gravar no arquivo (S/N)? ').upper() == 'S':
         gravaArquivo(novoCarro)  #Chama a função de gravação passando o dicionário do novo carro
     else:
-        print()
-        print('Informações descartadas!')
-        print()
-        input('Pressione ENTER para voltar ao Menu Principal...')
+        show_cancel_new_car_entry()
 
 
 ##FUNÇÃO COM RETORNO LISTA DE DICIONÁRIOS
 #Realiza a busca conforme a informação inserida pelo usuário
 def procurar_carro(tipoBusca=None):  #Se não houver parâmetro passado, o tipoBusca será = None
     if tipoBusca is None:   #Se tipoBusca = None (busca normal), mostra subtítulo
-        print('Buscar carro no estoque')
-        print('-----------------------')
-        print()
+        show_car_search_header()
     #Bloco de verificação do arquivo. Se o arquivo não existir, mostra mensagem. Se o arquivo existir
     #faz a leitura e organiza os dados em lista de dicionários.
     if arquivo.exists() is False:   #Se o arquivo de BD NÃO existe
-        print(f'O arquivo de BD "{arquivo}" não existe. Por favor, insira um novo carro.')
-        print()
-        input('Pressione ENTER para voltar...')
+        show_error(7, arquivo)
         return                  #Retorna ao Menu Principal
     else:                       #Se o arquivo de BD existe
         #Declara a estrutura de dicionário para armazenar os carros
@@ -238,99 +197,28 @@ def procurar_carro(tipoBusca=None):  #Se não houver parâmetro passado, o tipoB
                 pass                #Não faz nada
             else:                   #Se converteu...
                 if chaveBusca == 0:  #Verifica se o valor é zero e mostra mensagem
-                    print('O valor não pode ser ZERO! Por favor, tente novamente.')
-                    input('Pressione ENTER para voltar...')
+                    show_error(8)
                     return          #Retorna ao Menu Principal
         else:                       #Se a chave de busca é vazia, mostra mensagem
-            print('O campo de busca não pode ser vazio! Por favor, tente novamente.')
-            input('Pressione ENTER para voltar...')
+            show_error(9)
             return                  #Retorna ao Menu Principal
 
     if type(chaveBusca) is float:   #Se a chave de busca for float
         if tipoBusca == 'todos':    #Se o tipoBusca = 'todos', mostra o subtítulo de listar todos os carros
-            print('LISTANDO TODOS OS CARROS DO ESTOQUE:')
-            print('------------------------------------')
+            show_list_all_cars_header()
         else:                   #Se o tipoBusca = None, busca normal, subtítulo de busca por preço máximo
-            print()
-            print('Busca por PREÇO MÁXIMO:')
-            print('-----------------------')
+            show_high_price_subheader()
         listaExibir = []        #Lista do resultado da busca dos carros
         for item in listaCarros:    #Varre a lista completa de carros
             if item['preco'] <= chaveBusca:  #Verifica se o preço é <= ao preço do carro atual
                 listaExibir.append(item)    #Adiciona o carro atual na lista de resultado da busca
 
-        tamListaExibir = len(listaExibir)   #Pega o tamanho da lista de resultado de busca
-        if tamListaExibir > 0:  #Se a lista de resultado da busca tiver algum resultado
-            #Bloco de configuração para exibição em modo tabela
-            tamColunas = [25, 14, 16, 30]   #Define o tamanho das colunas
-            col0 = 'NOME DO CARRO'  #Título da coluna 1
-            col1 = 'PREÇO'          #Título da coluna 2
-            col2 = 'ANO FABRICAÇÃO'  #Título da coluna 3
-            col3 = 'ESTADO DE CONSERVAÇÃO'  #Título da coluna 4
-            #Concatena todas as informações do título da tabela centralizado de acordo com o tam das colunas
-            tituloTabela = (col0.center(tamColunas[0]) +
-                           col1.center(tamColunas[1]) +
-                           col2.center(tamColunas[2]) +
-                           col3.center(tamColunas[3]))
-
-            print(tituloTabela)     #Mostra o título da tabela
-            print('-' * sum(tamColunas))    #Mostra o sublinhado do título da tabela de acordo com o tam do título
-
-            for item in listaExibir:    #Para cada carro na lista de resultado
-                #Concatena em uma linha todas as informações do carro
-                linha = (item['nome'].center(tamColunas[0]) +
-                         str(item['preco']).center(tamColunas[1]) +
-                         str(item['ano']).center(tamColunas[2]) +
-                         item['estado'].center(tamColunas[3]))
-                print(linha)    #Mostra a linha com todas as informações do carro
-            print()
-            input('Pressione ENTER para voltar...')
-        else:   #Se nenhum resultado foi encontrado, mostra mensagem...
-            print()
-            print('Carro não encontrado!')
-            print()
-            input('Pressione ENTER para voltar...')
-            return  #Retorna ao Menu Principal
-        return listaExibir  #Retorna a lista de carros da busca
+        return show_search_result(listaExibir)  #Mostra o resultado da busca e retorna a lista de carros da busca
     else:   #Se a chave de busca for string
-        print()
-        print('Busca por ESTADO DE CONSERVAÇÃO:')
-        print('--------------------------------')
+        show_conservation_subheader()
         listaExibir = []        #Lista do resultado da busca dos carros
         for item in listaCarros:    #Varre a lista completa de carros
             if item['estado'].lower() == chaveBusca.lower():  #Verifica se o estado é igual ao do carro atual
                 listaExibir.append(item)    #Adiciona o carro atual na lista de resultado da busca
 
-        tamListaExibir = len(listaExibir)   #Pega o tamanho da lista de resultado de busca
-        if tamListaExibir > 0:  #Se a lista de resultado da busca tiver algum resultado
-            #Bloco de configuração para exibição em modo tabela
-            tamColunas = [25, 14, 16, 30]   #Define o tamanho das colunas
-            col0 = 'NOME DO CARRO'  #Título da coluna 1
-            col1 = 'PREÇO'          #Título da coluna 2
-            col2 = 'ANO FABRICAÇÃO'  #Título da coluna 3
-            col3 = 'ESTADO DE CONSERVAÇÃO'  #Título da coluna 4
-            # Concatena todas as informações do título da tabela centralizado de acordo com o tam das colunas
-            tituloTabela = (col0.center(tamColunas[0]) +
-                           col1.center(tamColunas[1]) +
-                           col2.center(tamColunas[2]) +
-                           col3.center(tamColunas[3]))
-
-            print(tituloTabela)     #Mostra o título da tabela
-            print('-' * sum(tamColunas))    #Mostra o sublinhado do título da tabela de acordo com o tam do título
-
-            for item in listaExibir:    #Para cada carro na lista de resultado
-                # Concatena em uma linha todas as informações do carro
-                linha = (item['nome'].center(tamColunas[0]) +
-                         str(item['preco']).center(tamColunas[1]) +
-                         str(item['ano']).center(tamColunas[2]) +
-                         item['estado'].center(tamColunas[3]))
-                print(linha)    #Mostra a linha com todas as informações do carro
-            print()
-            input('Pressione ENTER para voltar...')
-        else:   #Se nenhum resultado foi encontrado, mostra mensagem...
-            print()
-            print('Carro não encontrado!')
-            print()
-            input('Pressione ENTER para voltar...')
-            return  #Retorna ao Menu Principal
-        return listaExibir  #Retorna a lista de carros da busca
+        return show_search_result(listaExibir)  #Mostra o resultado da busca e retorna a lista de carros da busca
