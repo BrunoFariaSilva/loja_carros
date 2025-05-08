@@ -25,7 +25,7 @@ def show_menu_header():
 
 ##FUNÇÃO COM RETORNO INTEIRO
 #Mostra o Menu Principal e aguarda a opção do usuário
-def mostraMenu(listaMenu):
+def show_main_menu(listaMenu):
     show_menu_header
     for item in listaMenu:      #Varre a lista de itens do Menu Principal
         print(f'{listaMenu.index(item) + 1} --> {item}')    #Mostra o índice e o item

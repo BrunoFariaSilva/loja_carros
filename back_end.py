@@ -1,6 +1,3 @@
-"""
-Funções utilizadas no sistema de concessionária de carros
-"""
 from front_end import show_conservation_subheader
 from front_end import show_success_on_file_write
 from front_end import show_cancel_new_car_entry
@@ -14,7 +11,6 @@ from front_end import show_menu_header
 from front_end import show_error
 from datetime import datetime
 from pathlib import Path
-
 
 #DEFINE O ARQUIVO DE BANCO DE DADOS
 arquivo = Path('estoque_carros.txt')
@@ -37,31 +33,31 @@ def checaDados(tipo, informacao):
         if informacao != '':    #Verifica se foi digitado algo
             return informacao   #Retorna a informação digitada
         else:                   #Se não foi digitado algo mostra mensagem
-            show_error(1)
+            show_error(1)       #Mostra erro de campo vazio
             return ''           #Retorna vazio
     elif tipo == int:   #Se o tipo for inteiro
         if informacao != '':    #Verifica se foi digitado algo
             try:                #Tenta...
                 informacao = int(informacao)    #Converter para inteiro
             except ValueError:  #Se não conseguiu converter mostra mensagem
-                show_error(2)
+                show_error(2)   #Mostra erro de número inteiro
                 return ''       #Retorna vazio
             else:               #Se conseguiu converter
                 return informacao   #Retorna o número inteiro
         else:           #Se não foi digitado algo mostra mensagem
-            show_error(1)
+            show_error(1)       #Mostra erro de campo vazio
             return ''   #Retorna vazio
     elif tipo == float:     #Se o tipo for inteiro
         if informacao != '':    #Verifica se foi digitado algo
             try:                #Tenta...
                 informacao = float(informacao)    #Converter para float
             except ValueError:  #Se não conseguiu converter mostra mensagem
-                show_error(3)
+                show_error(3)   #Mostra erro de número real
                 return ''       #Retorna vazio
             else:               #Se conseguiu converter
                 return informacao   #Retorna o número real
         else:           #Se não foi digitado algo mostra mensagem
-            show_error(1)
+            show_error(1)       #Mostra erro de campo vazio
             return ''           #Retorna vazio
 
 
@@ -76,7 +72,7 @@ def gravaArquivo(dicCarro):
                 linha = linha + '\n'            #Adiciona uma quebra de linha
         conteudoArquivo = conteudoArquivo + linha   #Adiciona a nova linha ao conteúdo já existente
         arquivo.write_text(conteudoArquivo)     #Grava no arquivo o conteúdo atualizado
-        show_success_on_file_write()
+        show_success_on_file_write()            #Mostra msg de gravação do arquivo bem sucedida
     else:                       #Se o arquivo não existe
         linha = ''              #Cria a variável para receber as informações do novo carro
         for chave, valor in dicCarro.items():   #Varre o dicionário do novo carro
@@ -84,7 +80,7 @@ def gravaArquivo(dicCarro):
             if chave == 'estado':               #Se a chave for a última
                 linha = linha + '\n'            #Adiciona uma quebra de linha
         arquivo.write_text(linha)               #Grava no arquivo o conteúdo da linha
-        show_error(4)
+        show_error(4)           #Mostra msg de arquivo inexistente e foi criado com sucesso
 
 
 ##FUNÇÃO SEM RETORNO
@@ -96,7 +92,7 @@ def cadastrar_carro():
                  'ano': int,
                  'estado': str}
 
-    show_new_car_header()
+    show_new_car_header()       #Mostra cabeçalho de cadastro de novo carro
     #Solicita as informações ao usuário e chama a função de checagem do tipo de dados.
     #Essa função verificará também se o campo ficou vazio. Se ficou vazio, a informação
     #será solicitada novamente até que o usuário insira a informação correta
@@ -118,9 +114,9 @@ def cadastrar_carro():
         if dadoInserido == '':  #Se o campo ficou vazio, não faz nada, pois já exibiu msg de erro
             pass
         elif dadoInserido < anoMin:   #Se o ano é inferior ao ano mínimo
-            show_error(5)
+            show_error(5)       #Mostra erro de ano
         elif dadoInserido > anoMax:   #Se o ano é superior ao ano máximo
-            show_error(6)
+            show_error(6)       #Mostra erro de ano
         dadoInserido = checaDados(int, input('Ano do carro: '))
 
     novoCarro['ano'] = dadoInserido
@@ -131,23 +127,23 @@ def cadastrar_carro():
 
     novoCarro['estado'] = dadoInserido
 
-    show_new_car_summary(novoCarro)
+    show_new_car_summary(novoCarro)  #Mostra sumário das informações inseridas
     #Solicita confirmação para gravar no arquivo
     if input('Gravar no arquivo (S/N)? ').upper() == 'S':
         gravaArquivo(novoCarro)  #Chama a função de gravação passando o dicionário do novo carro
     else:
-        show_cancel_new_car_entry()
+        show_cancel_new_car_entry()  #Mostra msg de dados descartados
 
 
 ##FUNÇÃO COM RETORNO LISTA DE DICIONÁRIOS
 #Realiza a busca conforme a informação inserida pelo usuário
 def procurar_carro(tipoBusca=None):  #Se não houver parâmetro passado, o tipoBusca será = None
     if tipoBusca is None:   #Se tipoBusca = None (busca normal), mostra subtítulo
-        show_car_search_header()
+        show_car_search_header()  #Mostra cabeçalho de busca de carro
     #Bloco de verificação do arquivo. Se o arquivo não existir, mostra mensagem. Se o arquivo existir
     #faz a leitura e organiza os dados em lista de dicionários.
     if arquivo.exists() is False:   #Se o arquivo de BD NÃO existe
-        show_error(7, arquivo)
+        show_error(7, arquivo)  #Mostra erro de arquivo de BD inexistente
         return                  #Retorna ao Menu Principal
     else:                       #Se o arquivo de BD existe
         #Declara a estrutura de dicionário para armazenar os carros
@@ -197,17 +193,17 @@ def procurar_carro(tipoBusca=None):  #Se não houver parâmetro passado, o tipoB
                 pass                #Não faz nada
             else:                   #Se converteu...
                 if chaveBusca == 0:  #Verifica se o valor é zero e mostra mensagem
-                    show_error(8)
+                    show_error(8)   #Mostra msg de valor não pode ser zero
                     return          #Retorna ao Menu Principal
         else:                       #Se a chave de busca é vazia, mostra mensagem
-            show_error(9)
+            show_error(9)           #Mostra msg de campo vazio
             return                  #Retorna ao Menu Principal
 
     if type(chaveBusca) is float:   #Se a chave de busca for float
         if tipoBusca == 'todos':    #Se o tipoBusca = 'todos', mostra o subtítulo de listar todos os carros
-            show_list_all_cars_header()
+            show_list_all_cars_header()  #Mostra cabeçalho
         else:                   #Se o tipoBusca = None, busca normal, subtítulo de busca por preço máximo
-            show_high_price_subheader()
+            show_high_price_subheader()  #Mostra cabeçalho
         listaExibir = []        #Lista do resultado da busca dos carros
         for item in listaCarros:    #Varre a lista completa de carros
             if item['preco'] <= chaveBusca:  #Verifica se o preço é <= ao preço do carro atual
@@ -215,7 +211,7 @@ def procurar_carro(tipoBusca=None):  #Se não houver parâmetro passado, o tipoB
 
         return show_search_result(listaExibir)  #Mostra o resultado da busca e retorna a lista de carros da busca
     else:   #Se a chave de busca for string
-        show_conservation_subheader()
+        show_conservation_subheader()   #Mostra cabeçalho
         listaExibir = []        #Lista do resultado da busca dos carros
         for item in listaCarros:    #Varre a lista completa de carros
             if item['estado'].lower() == chaveBusca.lower():  #Verifica se o estado é igual ao do carro atual
