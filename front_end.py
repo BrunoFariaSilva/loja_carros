@@ -152,13 +152,3 @@ def show_search_result(result_list):
         input('Pressione ENTER para voltar...')
         return  #Retorna ao Menu Principal
     return result_list  #Retorna a lista de carros da busca
-
-
-
-
-
-
-
-
-
-
