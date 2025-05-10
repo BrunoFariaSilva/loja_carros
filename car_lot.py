@@ -77,9 +77,12 @@ class Car:                      #Classe para operações com carros
         print('\nCarro adicionado ao estoque com sucesso!\n')
 
 
-def __check_inputs(new_car_dict):  #Função para validação das inputs de novo carro
-    #Validate inputs to save on file
-    return True
+def __check_inputs(to_new_car_dict):  #Função para validação das inputs de novo carro
+    len_args = len(to_new_car_dict)        #Pega a quantidade de argumentos
+    if len_args < 4:
+        return False
+    else:
+        return True
 
 
 def __show_search_result(list_to_show):  #Função que mostra lista de carros
@@ -163,10 +166,9 @@ def __show_usage_info():        #Função "help" caso o programa não seja chama
 
 
 def __main():                   #Função principal
-    valid_args = ['newcar', 'search', 'listall']  #Lista dos argumentos válidos
+    valid_args = ['newcar', 'search', 'listall', 'help']  #Lista dos argumentos válidos
     args = sys.argv             #Variável recebe todos os argumentos
     args.pop(0)                 #Descarta o nome do programa
-    len_args = len(args)        #Pega a quantidade de argumentos
     if (not args) or (args[0] not in valid_args):  #Se não existir argumentos ou
                     #o que existir não estiver na lista de argumentos válidos
         __show_usage_info()     #Mostra a forma correta de uso do programa
@@ -177,13 +179,18 @@ def __main():                   #Função principal
                     #uma instância de carro (Car) passando os argumentos
                 new_car._save_new_car()  #Salva o novo carro no banco de dados
             else:               #Se as inputs estão incorretas ou faltantes
-                print('Please check inputs and try again!')
+                print('\nPlease check inputs and try again!\n')
+                __show_usage_info()  #Mostra a forma correta de uso do programa
+
 
         elif args[0] == 'search':  #Se o argumento é para busca
             __search_car(args[1])  #Chama a função de busca passando a input
 
         elif args[0] == 'listall':  #Se o argumento é para listagem completa
             __list_all_cars()   #Chama a função que mostra todos os carros
+        
+        elif args[0] == 'help':
+            __show_usage_info()  #Mostra a forma correta de uso do programa
 
 
 if __name__ == "__main__":
