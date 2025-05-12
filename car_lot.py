@@ -9,12 +9,8 @@ brunofariasilva@gmail.com
 -------
 
 Problemas conhecidos:
-1 - Erro caso os argumentos não sejam passados exatamente como se espera. O
-    tratamento destes erros ainda não foi implementado.
-2 - A leitura do resultado das buscas fica prejudicada, caso a listagem fique extensa.
-3 - Falta mostrar o resumo do novo carro adicionado e pedir a confirmação da gravação.
-4 - A palavra de busca (no caso de busca por estado de conservação) necessita ser exata
-    à que está gravada no banco de dados.
+1 - A leitura do resultado das buscas fica prejudicada, caso a listagem fique extensa.
+2 - Separar módulos
 """
 
 from pathlib import Path
@@ -33,9 +29,9 @@ class File():                   #Classe para operações com arquivos
             return True
 
     def _initialize_json(self):  #Método que inicializa o arquivo json caso ele não exista
-        self.dict = {"cars": []}  #Dicionário vazio
+        self.empty_dict = {"cars": []}  #Dicionário vazio
         with open(self.path, 'w', newline='\n') as file_to_save:
-            json.dump(self.dict, file_to_save, indent=4)  #Salva o dicionário vazio no arquivo
+            json.dump(self.empty_dict, file_to_save, indent=4)  #Salva o dicionário vazio no arquivo
 
     def _create_file(self):     #Método para criação do arquivo json, caso não exista
         Path.touch(self.path, mode=0o777, exist_ok=False)  #Cria o arquivo
@@ -57,32 +53,57 @@ class File():                   #Classe para operações com arquivos
             json.dump(dict_to_save, file_to_save, indent=4)  #Salva o dicionário completo no arquivo
 
 
+class Dao:                      #Classe para interação com arquivos
+    def __init__(self):         #Inicialização da classe
+        self.db_cars_contents = File(db_cars_filepath)  #Inicializa o arquivo de banco de dados
+        self._init_cars_db()    #Chama o método de inicialização do banco de dados
+    
+    def _init_cars_db(self):    #Método para inicialização do banco de dados
+        self.car_stock = self.db_cars_contents._read_file()  #Recupera o conteúdo do arquivo
+    
+    def save_new_car_to_db(self, car_dict):  #Método para salvar o novo carro no banco de dados
+        self.car_stock['cars'].append(car_dict)   #Adiciona o novo carro no estoque
+        self.db_cars_contents._save_file(self.car_stock)  #Salva o arquivo
+   
+
 class Car:                      #Classe para operações com carros
-    def __init__(self, name, year, price, condition):  #Inicialização da classe
+    def __init__(self, initial_args):  #Inicialização da classe
+        if self._validate_args_atributes(initial_args):  #Validação dos argumentos
+            self.dao_conn = Dao()  #Inicialização do banco de dados
+
+    def _validate_args_atributes(self, args):  #Método para validação dos argumentos
+        if len(args) >= 4:      #Verifica se existem pelo menos 4 argumentos
+            name, year, price, condition = args[0], args[1], args[2], ' '.join(args[3:])  #Atribui às
+                                                                    #variáveis os argumentos passados
+            if check_is_a_float(year) and check_is_a_float(price):  #Verifica números
+                self._set_atributes(name, year, price, condition)  #Chama o método que
+                                    #atribui os argumentos aos atributos da instância
+                self._is_newcar_valid(True)  #Marca a instância como carro válido
+                return True
+            else:               #Se houve input inválida
+                    self._is_newcar_valid(False)  #Marca a instância como carro não válido
+                    return False
+        else:                   #Se não existe pelo menos 4 argumentos
+            self._is_newcar_valid(False)  #Marca a instância como carro não válido
+            return False
+
+    def _is_newcar_valid(self, valid):  #Método que marca o carro como válido ou não
+        self.is_valid = valid   #Atributo de carro válido
+
+    def _set_atributes(self, name, year, price, condition):
         self.name = name        #Nome do carro
         self.year = year        #Ano de fabricação
         self.price = price      #Preço
         self.condition = condition  #Estado de conservação
-
-        self.db_cars_contents = File(db_cars_filepath)  #Inicializa o arquivo de banco de dados
-        self.car_stock = self.db_cars_contents._read_file()  #Recupera o conteúdo do arquivo
 
     def _save_new_car(self):    #Método que grava um novo carro no estoque
         new_car_to_save_dict = {'name': self.name,  #Dicionário com os atributos do carro
                         'year': self.year,
                         'price': self.price,
                         'condition': self.condition}
-        self.car_stock['cars'].append(new_car_to_save_dict)  #Adiciona o novo carro no estoque
-        self.db_cars_contents._save_file(self.car_stock)  #Salva o arquivo
+        
+        self.dao_conn.save_new_car_to_db(new_car_to_save_dict)
         print('\nCarro adicionado ao estoque com sucesso!\n')
-
-
-def __check_inputs(to_new_car_dict):  #Função para validação das inputs de novo carro
-    len_args = len(to_new_car_dict)        #Pega a quantidade de argumentos
-    if len_args < 4:
-        return False
-    else:
-        return True
 
 
 def __show_search_result(list_to_show):  #Função que mostra lista de carros
@@ -90,7 +111,7 @@ def __show_search_result(list_to_show):  #Função que mostra lista de carros
     for item in list_to_show:   #Para cada item na lista, mostra os detalhes
         print(f'Carro:\t{item['name']}')
         print(f'Ano:\t{item['year']}')
-        print(f'Preço:\t{item['price']}')
+        print(f'Preço:\tR$ {float(item['price']):.2f}')
         print(f'Estado:\t{item['condition']}\n')
 
 
@@ -107,7 +128,6 @@ def __search_car(search_info):  #Função para busca de carros
         else:                   #Se não existir carro no estoque
             print('\nNenhum carro encontrado no estoque!\n')
             return 0            #Retorna zero
-                
 
     def _search_by_condition(condition):  #Subfunção que busca por estado de conservação
         car_stock_content = File(db_cars_filepath)  #Leitura do arquivo
@@ -115,7 +135,7 @@ def __search_car(search_info):  #Função para busca de carros
         if car_stock:           #Se existir carro no estoque
             search_result = []  #Nova lista para resultado da busca
             for car in car_stock:  #Para cada carro no estoque
-                if car['condition'] == condition:  #Compara o estado de conservação
+                if condition.casefold() in car['condition'].casefold():  #Compara o estado de conservação
                     search_result.append(car)  #Adiciona o carro na lista de resultados
             return search_result  #Retorna a lista de resultados
         else:                   #Se não existir carro no estoque
@@ -151,19 +171,69 @@ def __list_all_cars():          #Função que lista todos os carros
         print('\nNenhum carro encontrado no estoque!\n')
 
 
-def __show_usage_info():        #Função "help" caso o programa não seja chamado corretamente
-    print(f'\nUsage: {program_filename} <operation> <options>')
-    print('\nOperations:\tnewcar\t\tInsert new car to stock')
-    print('\t\tsearch\t\tSearch for a car by price or condition')
-    print('\t\tlistall\t\tList all cars in stock')
-    print('\t\thelp\t\tShow this help screen\n\n')
-    print('To insert a new car, enter the argument below:')
-    print(f'{program_filename} newcar <car_name> <fabrication_year> <price> <condition>')
-    print(f'Exemple: {program_filename} Corolla 2010 35000 Seminovo\n')
-    print('For a search, use the PRICE or CONDITION as a key, one at once')
-    print(f'Exemple: {program_filename} search <price> or <condition>\n')
-    print('To list all cars in stock, use <listall> argument')
-    print(f'Exemple: {program_filename} listall\n\n')    
+def show_usage_info_and_errors(message = None):  #Função "help" caso o programa não seja chamado corretamente
+    if message:
+        print(f'\n{message}')
+        print(f"\nType '{program_filename} help' to obtain usage examples.\n")
+    else:
+        print(f'\nUsage: {program_filename} <operation> <options>')
+        print('\nOperations:\tnewcar\t\tInsert new car to stock')
+        print('\t\tsearch\t\tSearch for a car by price or condition')
+        print('\t\tlistall\t\tList all cars in stock')
+        print('\t\thelp\t\tShow this help screen\n\n')
+        print('To insert a new car to stock, enter the arguments as below:')
+        print(f'\t{program_filename} newcar <car_name> <fabrication_year> <price> <condition>')
+        print(f'\tArguments <fabrication_year> and <price> needs to be a number')
+        print(f'\tExemple: {program_filename} Corolla 2010 35000 Seminovo\n')
+        print('For a search, use the PRICE or CONDITION as a key, one at once')
+        print(f'\tExemple: {program_filename} search <price> or <condition>\n')
+        print('To list all cars in stock, use <listall> argument')
+        print(f'\tExemple: {program_filename} listall\n\n')    
+
+
+def check_is_a_float(num):
+    try:
+        num = float(num)
+    except ValueError:
+        return False
+    else:
+        return num
+
+
+def __build_new_car(args):
+    args.pop(0)         #Descarta o argumento 'newcar'
+    new_car = Car(args)  #Cria uma instância de carro (Car) passando os argumentos
+    if new_car.is_valid:  #Verifica se o carro informado é válido (mínimo de 4 argumentos)
+        if __ask_to_save_new_car(new_car):
+            new_car._save_new_car()  #Salva o novo carro no banco de dados
+        else:
+            show_usage_info_and_errors('-------> Informações descartadas <-------')
+    else:               #Se as inputs estão incorretas ou faltantes
+        show_usage_info_and_errors('-------> Please check inputs and try again! <-------')  #Mostra a forma correta de uso do programa    
+
+
+def __check_input(text, options):
+    #Validate user input with options provided
+    user_input = input(text)
+    if user_input in str(options):
+        return user_input
+    else:
+        print('\nInvalid input! Run it again.')
+        return
+
+
+def __show_car_summary(car):
+    print('Detalhes do carro\n')
+    print(f'Carro:\t{car.name}')
+    print(f'Ano:\t{car.year}')
+    print(f'Preço:\tR$ {float(car.price):.2f}')
+    print(f'Estado:\t{car.condition}\n')
+
+
+def __ask_to_save_new_car(car):
+    __show_car_summary(car)
+    if __check_input(f'Deseja salvar o carro no estoque (S/n)? ', ['S', 'n']) == 'S':
+        return True
 
 
 def __main():                   #Função principal
@@ -172,17 +242,10 @@ def __main():                   #Função principal
     args.pop(0)                 #Descarta o nome do programa
     if (not args) or (args[0] not in valid_args):  #Se não existir argumentos ou
                     #o que existir não estiver na lista de argumentos válidos
-        __show_usage_info()     #Mostra a forma correta de uso do programa
+        show_usage_info_and_errors()     #Mostra a forma correta de uso do programa
     else:                       #Se existe argumento válido
         if args[0] == 'newcar':  #Se o argumento é para novo carro
-            if __check_inputs(args[1:]):  #Verifica as inputs para o novo carro (não implementado)
-                new_car = Car(name=args[1], year=args[2], price=args[3], condition=args[4])  #Cria
-                    #uma instância de carro (Car) passando os argumentos
-                new_car._save_new_car()  #Salva o novo carro no banco de dados
-            else:               #Se as inputs estão incorretas ou faltantes
-                print('\nPlease check inputs and try again!\n')
-                __show_usage_info()  #Mostra a forma correta de uso do programa
-
+            __build_new_car(args)
 
         elif args[0] == 'search':  #Se o argumento é para busca
             __search_car(args[1])  #Chama a função de busca passando a input
@@ -191,8 +254,9 @@ def __main():                   #Função principal
             __list_all_cars()   #Chama a função que mostra todos os carros
         
         elif args[0] == 'help':
-            __show_usage_info()  #Mostra a forma correta de uso do programa
+            show_usage_info_and_errors()  #Mostra a forma correta de uso do programa
 
 
 if __name__ == "__main__":
     __main()
+    
