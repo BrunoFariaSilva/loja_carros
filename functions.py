@@ -1,5 +1,5 @@
-from classes import File, Dao, Car
-from classes import program_filename, db_cars_filepath
+from classes import Dao, Car
+from classes import program_filename
 
 def __show_search_result(list_to_show):  #Função que mostra lista de carros
     print(f'\n{len(list_to_show)} carro(s) encontrado(s):')
@@ -10,10 +10,10 @@ def __show_search_result(list_to_show):  #Função que mostra lista de carros
         print(f'Estado:\t{item['condition']}\n')
 
 
-def search_car(search_info):  #Função para busca de carros
+def search_car(search_info):    #Função para busca de carros
     def _search_by_price(price):  #Subfunção que busca por preço
-        dao_conn = Dao()
-        car_stock = dao_conn.get_content_list()
+        dao_conn = Dao()        #Cria instância de objeto DAO
+        car_stock = dao_conn.get_content_list()  #Obtém o estoque de carros em lista
         if car_stock:           #Se existir carro no estoque
             search_result = []  #Nova lista para resultado da busca
             for car in car_stock:  #Para cada carro no estoque
@@ -25,8 +25,8 @@ def search_car(search_info):  #Função para busca de carros
             return 0            #Retorna zero
 
     def _search_by_condition(condition):  #Subfunção que busca por estado de conservação
-        dao_conn = Dao()
-        car_stock = dao_conn.get_content_list()
+        dao_conn = Dao()        #Cria instância de objeto DAO
+        car_stock = dao_conn.get_content_list()  #Obtém o estoque de carros em lista
         if car_stock:           #Se existir carro no estoque
             search_result = []  #Nova lista para resultado da busca
             for car in car_stock:  #Para cada carro no estoque
@@ -53,24 +53,24 @@ def search_car(search_info):  #Função para busca de carros
             print('\nNenhum carro encontrado para a busca realizada! Tente novamente.\n')
 
 
-def list_all_cars():          #Função que lista todos os carros
-    dao_conn = Dao()
-    car_stock = dao_conn.get_content_list()
+def list_all_cars():            #Função que lista todos os carros
+    dao_conn = Dao()            #Cria instância de objeto DAO
+    car_stock = dao_conn.get_content_list()  #Obtém o estoque de carros em lista
     if car_stock:               #Se existir carro no estoque
         all_cars = []           #Nova lista para salvar todos os carros
         for car in car_stock:   #Para cada carro no estoque
             all_cars.append(car)  #Adiciona o carro na lista
-        
+
         __show_search_result(all_cars)  #Mostra a lista de carros
     else:                       #Se não existir carro no estoque
         print('\nNenhum carro encontrado no estoque!\n')
 
 
 def show_usage_info_and_errors(message = None):  #Função "help" caso o programa não seja chamado corretamente
-    if message:
+    if message:                 #Se existir mensagem, mostra-a
         print(f'\n{message}')
         print(f"\nType '{program_filename} help' to obtain usage examples.\n")
-    else:
+    else:                       #Se não existir mensagem, mostra o help
         print(f'\nUsage: {program_filename} <operation> <options>')
         print('\nOperations:\tnewcar\t\tInsert new car to stock')
         print('\t\tsearch\t\tSearch for a car by price or condition')
@@ -86,47 +86,48 @@ def show_usage_info_and_errors(message = None):  #Função "help" caso o program
         print(f'\tExemple: {program_filename} listall\n\n')    
 
 
-def check_is_a_float(num):
-    try:
-        num = float(num)
-    except ValueError:
-        return False
-    else:
-        return num
+def check_is_a_float(num):      #Função de checagem de números reais
+    try:                        #Tenta...
+        num = float(num)        #Converter para float
+    except ValueError:          #Se não conseguir
+        return False            #Retorna falso
+    else:                       #Se conseguir
+        return num              #Retorna o número
 
 
-def build_new_car(args):
-    args.pop(0)         #Descarta o argumento 'newcar'
-    new_car = Car(args)  #Cria uma instância de carro (Car) passando os argumentos
-    if new_car.is_valid:  #Verifica se o carro informado é válido (mínimo de 4 argumentos)
-        if __ask_to_save_new_car(new_car):
+def build_new_car(args):        #Função construtora de um novo carro
+    args.pop(0)                 #Descarta o argumento 'newcar'
+    new_car = Car(args)         #Cria uma instância de carro (Car) passando os argumentos
+    if new_car.is_valid:        #Verifica se o carro informado é válido (mínimo de 4 argumentos)
+        if __ask_to_save_new_car(new_car):  #Chama a função de confirmação de gravação
             new_car.save_new_car()  #Salva o novo carro no banco de dados
-        else:
+        else:                   #Se não confirmou a gravação
             show_usage_info_and_errors('-------> Informações descartadas <-------')
-    else:               #Se as inputs estão incorretas ou faltantes
-        show_usage_info_and_errors('-------> Please check inputs and try again! <-------')  #Mostra a forma correta de uso do programa    
+    else:                       #Se as inputs estão incorretas ou faltantes
+        show_usage_info_and_errors('-------> Please check inputs and try again! <-------')  #Mostra
+                                                                #a forma correta de uso do programa    
 
 
-def __check_input(text, options):
+def __check_input(text, options):  #Função para checagem de input
     #Validate user input with options provided
-    user_input = input(text)
-    if user_input in str(options):
-        return user_input
-    else:
+    user_input = input(text)    #Obtém a input
+    if user_input in str(options):  #Verifica se a input existe nas opções
+        return user_input       #Retorna a input
+    else:                       #Se a input não existe nas opções
         print('\nInvalid input! Run it again.')
-        return
+        return                  #Retorna simples
 
 
-def __show_car_summary(car):
-    print('Detalhes do carro\n')
-    print(f'Carro:\t{car.name}')
+def __show_car_summary(car):    #Função para exibição dos detalhes do carro
+    print('Detalhes do carro\n')  #A função recebe o objeto do tipo Car e exibe
+    print(f'Carro:\t{car.name}')  #os detalhes.
     print(f'Ano:\t{car.year}')
     print(f'Preço:\tR$ {float(car.price):.2f}')
     print(f'Estado:\t{car.condition}\n')
 
 
-def __ask_to_save_new_car(car):
-    __show_car_summary(car)
+def __ask_to_save_new_car(car):  #Função que obtém a confirmação de gravação do novo carro
+    __show_car_summary(car)     #Mostra o resumo do carro
     if __check_input(f'Deseja salvar o carro no estoque (S/n)? ', ['S', 'n']) == 'S':
-        return True
+        return True             #Retorna True
     

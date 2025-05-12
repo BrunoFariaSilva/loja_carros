@@ -4,13 +4,12 @@ Loja de carros
 Programa desenvolvido pelo Grupo DEV Carlo Acutis - Bruno Faria
 
 brunofariasilva@gmail.com
-08/05/2025
+08/05/2025 - 12/05/2025
 
 -------
 
 Problemas conhecidos:
 1 - A leitura do resultado das buscas fica prejudicada, caso a listagem fique extensa.
-2 - Separar módulos
 """
 
 from functions import list_all_cars, show_usage_info_and_errors
@@ -27,7 +26,7 @@ def __main():                   #Função principal
         show_usage_info_and_errors()     #Mostra a forma correta de uso do programa
     else:                       #Se existe argumento válido
         if args[0] == 'newcar':  #Se o argumento é para novo carro
-            build_new_car(args)
+            build_new_car(args)  #Chama a função construtora do novo carro
 
         elif args[0] == 'search':  #Se o argumento é para busca
             search_car(args[1])  #Chama a função de busca passando a input
@@ -35,7 +34,7 @@ def __main():                   #Função principal
         elif args[0] == 'listall':  #Se o argumento é para listagem completa
             list_all_cars()   #Chama a função que mostra todos os carros
         
-        elif args[0] == 'help':
+        elif args[0] == 'help':  #Se o argumento é para ajuda
             show_usage_info_and_errors()  #Mostra a forma correta de uso do programa
 
 

@@ -87,5 +87,5 @@ class Car:                      #Classe para operações com carros
                         'price': self.price,
                         'condition': self.condition}
         
-        self.dao_conn.save_new_car_to_db(new_car_to_save_dict)
+        self.dao_conn.save_new_car_to_db(new_car_to_save_dict)  #Chama a gravação do bd
         print('\nCarro adicionado ao estoque com sucesso!\n')
