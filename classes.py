@@ -21,18 +21,14 @@ class File():                   #Classe para operações com arquivos
         Path.touch(self.path, mode=0o777, exist_ok=False)  #Cria o arquivo
         self._initialize_json()  #Inicializa o arquivo
 
-    def _read_file(self):       #Método para leitura do arquivo
+    def read_file(self):       #Método para leitura do arquivo
         if not self._file_exists():  #Se o arquivo não existir
             self._create_file()  #Chama o método de criação do arquivo
         with open(self.path, 'r', newline='\n') as file_to_read:
             file_contents = json.load(file_to_read)  #Abre o arquivo e lê o conteúdo
         return file_contents    #Retorna o conteúdo do arquivo
     
-    def _get_content_list(self):  #Método para recuperar o conteúdo do arquivo em lista
-        content = self._read_file()  #Lê o conteúdo do arquivo
-        return content['cars']  #Retorna apenas o conteúdo em lista
-
-    def _save_file(self, dict_to_save):  #Método para salvar o arquivo
+    def save_file(self, dict_to_save):  #Método para salvar o arquivo
         with open(self.path, 'w', newline='\n') as file_to_save:
             json.dump(dict_to_save, file_to_save, indent=4)  #Salva o dicionário completo no arquivo
 
@@ -43,14 +39,14 @@ class Dao:                      #Classe para interação com arquivos
         self._init_cars_db()    #Chama o método de inicialização do banco de dados
     
     def _init_cars_db(self):    #Método para inicialização do banco de dados
-        self.car_stock = self.db_cars_contents._read_file()  #Recupera o conteúdo do arquivo
+        self.car_stock = self.db_cars_contents.read_file()  #Recupera o conteúdo do arquivo
     
     def save_new_car_to_db(self, car_dict):  #Método para salvar o novo carro no banco de dados
         self.car_stock['cars'].append(car_dict)   #Adiciona o novo carro no estoque
-        self.db_cars_contents._save_file(self.car_stock)  #Salva o arquivo
+        self.db_cars_contents.save_file(self.car_stock)  #Salva o arquivo
 
     def get_content_list(self):  #Método para recuperar o conteúdo do arquivo em lista
-        content = self.db_cars_contents._read_file()  #Lê o conteúdo do arquivo
+        content = self.db_cars_contents.read_file()  #Lê o conteúdo do arquivo
         return content['cars']  #Retorna apenas o conteúdo em lista
    
 
@@ -85,7 +81,7 @@ class Car:                      #Classe para operações com carros
         self.price = price      #Preço
         self.condition = condition  #Estado de conservação
 
-    def _save_new_car(self):    #Método que grava um novo carro no estoque
+    def save_new_car(self):    #Método que grava um novo carro no estoque
         new_car_to_save_dict = {'name': self.name,  #Dicionário com os atributos do carro
                         'year': self.year,
                         'price': self.price,

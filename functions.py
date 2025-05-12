@@ -100,7 +100,7 @@ def build_new_car(args):
     new_car = Car(args)  #Cria uma instância de carro (Car) passando os argumentos
     if new_car.is_valid:  #Verifica se o carro informado é válido (mínimo de 4 argumentos)
         if __ask_to_save_new_car(new_car):
-            new_car._save_new_car()  #Salva o novo carro no banco de dados
+            new_car.save_new_car()  #Salva o novo carro no banco de dados
         else:
             show_usage_info_and_errors('-------> Informações descartadas <-------')
     else:               #Se as inputs estão incorretas ou faltantes
